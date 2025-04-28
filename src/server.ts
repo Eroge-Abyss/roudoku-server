@@ -7,11 +7,27 @@ export default class Server implements Party.Server {
   constructor(readonly room: Party.Room) {}
 
   static async onFetch(
-    _req: Party.Request,
+    req: Party.Request,
     _lobby: Party.FetchLobby,
     _ctx: Party.ExecutionContext,
   ) {
-    return new Response(nanoid(10));
+    const code = nanoid(10);
+    const response = new Response(code);
+
+    // Add CORS headers
+    response.headers.set("Access-Control-Allow-Origin", "*"); // Allow any origin, or specify your client origin
+    response.headers.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+
+    // If it's a preflight OPTIONS request, return just the headers
+    if (req.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: response.headers,
+      });
+    }
+
+    return response;
   }
 
   onConnect(conn: Party.Connection, ctx: Party.ConnectionContext) {
@@ -32,9 +48,9 @@ export default class Server implements Party.Server {
   }
 
   onMessage(message: string, sender: Party.Connection) {
-    if (sender.id !== this.host) {
-      return;
-    }
+    // if (sender.id !== this.host) {
+    //   return;
+    // }
 
     // let's log the message
     console.log(`connection ${sender.id} sent message: ${message}`);
