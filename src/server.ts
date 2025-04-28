@@ -8,11 +8,22 @@ export default class Server implements Party.Server {
 
   static async onFetch(
     req: Party.Request,
-    _lobby: Party.FetchLobby,
-    _ctx: Party.ExecutionContext,
+    lobby: Party.FetchLobby,
+    ctx: Party.ExecutionContext,
   ) {
     const code = nanoid(10);
-    const response = new Response(code);
+
+    // Get the base URL from the request
+    const url = new URL(req.url);
+
+    // Construct WebSocket URL
+    // Note: We use the lobby's party domain for the WebSocket URL
+    // Format will be: ws(s)://{host}/parties/main/{code}
+    const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${wsProtocol}//${url.host}/parties/main/${code}`;
+
+    // Create a response with the WebSocket URL
+    const response = new Response(wsUrl);
 
     // Add CORS headers
     response.headers.set("Access-Control-Allow-Origin", "*"); // Allow any origin, or specify your client origin
