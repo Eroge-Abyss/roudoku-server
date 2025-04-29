@@ -1,10 +1,6 @@
 {
-  "$schema": "https://www.partykit.io/schema.json",
-  "name": "roudoku-server",
-  "main": "src/server.ts",
-  "compatibilityDate": "2025-04-28",
-  "serve": {
-    "path": "public",
-    "build": "src/client.ts"
-  }
+	"$schema": "https://www.partykit.io/schema.json",
+	"name": "roudoku-server",
+	"main": "src/server.ts",
+	"compatibilityDate": "2025-04-28"
 }
