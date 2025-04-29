@@ -8,37 +8,38 @@ export default class Server implements Party.Server {
 
   static async onFetch(
     req: Party.Request,
-    lobby: Party.FetchLobby,
-    ctx: Party.ExecutionContext,
+    _lobby: Party.FetchLobby,
+    _ctx: Party.ExecutionContext,
   ) {
-    const code = nanoid(10);
-
-    // Get the base URL from the request
     const url = new URL(req.url);
 
-    // Construct WebSocket URL
-    // Note: We use the lobby's party domain for the WebSocket URL
-    // Format will be: ws(s)://{host}/parties/main/{code}
-    const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${wsProtocol}//${url.host}/parties/main/${code}`;
+    if (url.pathname === "/") {
+      const code = nanoid(10);
+      // Format will be: ws(s)://{host}/parties/main/{code}
+      const wsProtocol = url.protocol === "https:" ? "wss:" : "ws:";
+      const wsUrl = `${wsProtocol}//${url.host}/parties/main/${code}`;
+      const response = new Response(wsUrl);
 
-    // Create a response with the WebSocket URL
-    const response = new Response(wsUrl);
+      // Add CORS headers
+      response.headers.set("Access-Control-Allow-Origin", "*"); // Allow any origin, or specify your client origin
+      response.headers.set(
+        "Access-Control-Allow-Methods",
+        "POST, GET, OPTIONS",
+      );
+      response.headers.set("Access-Control-Allow-Headers", "Content-Type");
 
-    // Add CORS headers
-    response.headers.set("Access-Control-Allow-Origin", "*"); // Allow any origin, or specify your client origin
-    response.headers.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-    response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+      // If it's a preflight OPTIONS request, return just the headers
+      if (req.method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: response.headers,
+        });
+      }
 
-    // If it's a preflight OPTIONS request, return just the headers
-    if (req.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: response.headers,
-      });
+      return response;
     }
 
-    return response;
+    return new Response("Not found", { status: 404 });
   }
 
   onConnect(conn: Party.Connection, ctx: Party.ConnectionContext) {
